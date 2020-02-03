@@ -6,6 +6,7 @@ import stack_overflow_page
 
 schedule = BlockingScheduler()
 
+ # https://heroku.com/deploy?template=https://github.com/alexsomai/stackoverflow-fanatic-badge/tree/deploy-to-heroku
 
 @schedule.scheduled_job('interval', minutes=1)
 def access_stack_overflow_page():
