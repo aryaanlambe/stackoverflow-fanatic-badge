@@ -3,11 +3,20 @@ import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-import sendgrid_helper
+from sendgrid_helper import send_mail
 
 
 def login():
     print("Logging into stackoverflow.com")
+
+    email = os.environ.get('STACK_OVERFLOW_EMAIL')
+    password = os.environ.get('STACK_OVERFLOW_PASSWORD')
+    display_name = os.environ.get('STACK_OVERFLOW_DISPLAY_NAME')
+
+    if None in (email, password, display_name):
+        print("Set 'STACK_OVERFLOW_EMAIL' 'STACK_OVERFLOW_PASSWORD' 'STACK_OVERFLOW_DISPLAY_NAME' env variables "
+              "to successfully log into Stack Overflow")
+        return
 
     chrome_options = Options()
     chrome_options.binary_location = os.environ.get('GOOGLE_CHROME_SHIM')
@@ -18,20 +27,20 @@ def login():
 
         driver.find_element_by_link_text("Log in").click()
 
-        driver.find_element_by_id("email").send_keys(os.environ['STACK_OVERFLOW_EMAIL'])
-        driver.find_element_by_id("password").send_keys(os.environ['STACK_OVERFLOW_PASSWORD'])
+        driver.find_element_by_id("email").send_keys(email)
+        driver.find_element_by_id("password").send_keys(password)
         driver.find_element_by_id("submit-button").submit()
 
         driver.find_element_by_class_name("my-profile").click()
 
         elem = driver.find_element_by_class_name("mini-avatar")
-        assert os.environ['STACK_OVERFLOW_DISPLAY_NAME'] in elem.text
+        assert display_name in elem.text
         print("Logged into stackoverflow.com and accessed profile page")
 
     except Exception as e:
         message = "An error occurred while trying to access stackoverflow.com!"
         print(message, e)
-        sendgrid_helper.send_mail("Error at login!", message + str(e))
+        send_mail("Error at login!", message + str(e))
 
     finally:
         driver.close()
